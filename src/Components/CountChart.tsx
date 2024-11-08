@@ -6,21 +6,20 @@ import { RadialBarChart, RadialBar, Legend, ResponsiveContainer } from 'recharts
 const data = [
   {
     name: 'Total',
-    count: 104,
+    count: 100,
     fill: 'White',
   },
   {
     name: 'Girls',
     count: 40,
-    fill: '#8884d8',
+    fill: '#FAE27C',
   },
   {
     name: 'Boys',
     count: 60,
-    fill: '#83a6ed',
+    fill: '#C3EBFA',
   },
 ];
-
 
 
 const CountChart = () => {
@@ -31,25 +30,25 @@ const CountChart = () => {
         <Image src="/moreDark.png" alt="" width={20} height={20} />
       </div>
 
-      <div className='w-full h-[75%]'>
+      <div className='relative w-full h-[75%]'>
       <ResponsiveContainer>
-        <RadialBarChart cx="50%" cy="50%" innerRadius="10%" outerRadius="80%" barSize={10} data={data}>
+        <RadialBarChart cx="50%" cy="50%" innerRadius="40%" outerRadius="100%" barSize={32} data={data}>
           <RadialBar
-            label={{ position: 'insideStart', fill: '#fff' }}
             background
-            dataKey="uv"
+            dataKey="count"
           />
-          <Legend iconSize={10} layout="vertical" verticalAlign="middle" />
         </RadialBarChart>
       </ResponsiveContainer>
+      <Image src="/maleFemale.png" alt="" width={50} height={50} className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'/>
       </div>
 
       <div className='flex justify-center gap-16'>
        <div>
         <div className='w-5 h-5 bg-lamaSky rounded-full'/>
-        <h1 className='font-bold '>2,871</h1>
+        <h1 className='font-bold'>2,871</h1>
         <h2 className='text-xm text-gray-500'>Boys (55%)</h2>
        </div>
+
        <div>
         <div className='w-5 h-5 bg-lamaSky rounded-full'/>
         <h1 className='font-bold '>1,290</h1>
