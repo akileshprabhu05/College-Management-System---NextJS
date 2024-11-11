@@ -15,7 +15,7 @@ const BigCalendar = () => {
     setView(selectedView);
   };
   
-  {console.log(calendarEvents)};
+
 
   return (
     <Calendar
