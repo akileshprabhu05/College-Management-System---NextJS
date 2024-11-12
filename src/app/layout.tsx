@@ -22,7 +22,6 @@ export default function RootLayout({
       <header className="flex justify-end items-end w-screen pr-4 mt-2">
         <div>
         <SignedOut>
-          <SignInButton/>
         </SignedOut>
         <SignedIn>
           <UserButton showName/>
