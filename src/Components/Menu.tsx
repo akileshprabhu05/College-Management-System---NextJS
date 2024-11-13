@@ -45,12 +45,6 @@ const Menu = () => {
           visible: ["admin", "teacher"],
         },
         {
-          icon: "/lesson.png",
-          label: "Lessons",
-          href: "/list/lessons",
-          visible: ["admin", "teacher"],
-        },
-        {
           icon: "/exam.png",
           label: "Exams",
           href: "/list/exams",
@@ -78,12 +72,6 @@ const Menu = () => {
           icon: "/calendar.png",
           label: "Events",
           href: "/list/events",
-          visible: ["admin", "teacher", "student", "parent"],
-        },
-        {
-          icon: "/message.png",
-          label: "Messages",
-          href: "/list/messages",
           visible: ["admin", "teacher", "student", "parent"],
         },
         {
