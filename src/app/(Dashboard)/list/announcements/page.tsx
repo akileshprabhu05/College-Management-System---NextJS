@@ -1,62 +1,69 @@
 
+import FormModal from "@/Components/FormModal";
 import Pagination from "@/Components/Pagination";
 import Table from "@/Components/Table";
 import TableSearch from "@/Components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { CurrentUserId } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
-// const { sessionClaims } = auth();
-// const role = (sessionClaims?.metadata as {role?: string })?.role
-const authResult = await auth();
-const { sessionClaims } = authResult;
-const role = (sessionClaims?.metadata as { role?: string })?.role;
 
 type AnnouncementList = Announcement & { class:Class }
 
-const columns = [
-  {
-    header: "Title",
-    accessor: "title",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  ...(role === "Admin" ? [{
-    header: "Actions",
-    accessor: "action",
-  }] : []),
-];
-
-const renderRow = (item: AnnouncementList) => (
-  <tr
-    key={item.id}
-    className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-  >
-    <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class.name}</td>
-    <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-us").format(item.date)}</td>
-    <td>
-      <div className="flex items-center gap-2">
-       
-      </div>
-    </td>
-  </tr>
-);
 
 const AnnouncementListPage =   async ({
   searchParams,
 }: {
   searchParams:{[key:string]:string | undefined };
 }) => {
+  
+  const authResult = await auth();
+  const role = (authResult?.sessionClaims?.metadata as { role?: string })?.role;
+  const userId = await CurrentUserId();
+
+  const renderRow = (item: AnnouncementList) => (
+    <tr
+      key={item.id}
+      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
+    >
+      <td className="flex items-center gap-4 p-4">{item.title}</td>
+      <td>{item.class?.name || "-"}</td>
+      <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-us").format(item.date)}</td>
+      <td>
+        <div className="flex items-center gap-2">
+        {role === "admin" && (
+            <>
+              <FormModal table="announcement" type="update" data={item} />
+              <FormModal table="announcement" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+
+  const columns = [
+    {
+      header: "Title",
+      accessor: "title",
+    },
+    {
+      header: "Class",
+      accessor: "class",
+    },
+    {
+      header: "Date",
+      accessor: "date",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "Admin" ? [{
+      header: "Actions",
+      accessor: "action",
+    }] : []),
+  ];
 
   const { page, ...queryParams } = searchParams
 
@@ -78,6 +85,19 @@ const AnnouncementListPage =   async ({
     }
   }
 
+  const roleConditions = {
+    teacher: { lessons: { some: { teacherId: userId! } } },
+    student: { students: { some: { id: userId! } } },
+    parent: { students: { some: { parentId: userId! } } },
+  };
+
+  query.OR = [
+    { classId: null },
+    {
+      class: roleConditions[role as keyof typeof roleConditions] || {},
+    },
+  ];
+
   const [data,count] = await prisma.$transaction([
     prisma.announcement.findMany({
       where:query,
@@ -90,10 +110,6 @@ const AnnouncementListPage =   async ({
     prisma.announcement.count({where:query})
   ])
   
-  const authResult = await auth();
-  const { sessionClaims } = authResult;
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
-
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
@@ -110,7 +126,9 @@ const AnnouncementListPage =   async ({
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-           
+            {role === "admin" && (
+              <FormModal table="announcement" type="create" />
+            )}
           </div>
         </div>
       </div>
