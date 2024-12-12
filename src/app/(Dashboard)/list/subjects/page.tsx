@@ -1,57 +1,65 @@
 
+import FormModal from "@/Components/FormModal";
 import Pagination from "@/Components/Pagination";
 import Table from "@/Components/Table";
 import TableSearch from "@/Components/TableSearch";
-import { role, subjectsData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { auth } from "@clerk/nextjs/server";
 import { Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 
 type SubjectList = Subject & {teachers: Teacher[] };
 
-const columns = [
-  {
-    header: "Subject Name",
-    accessor: "name",
-  },
-  {
-    header: "Teachers",
-    accessor: "teachers",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
-];
-
-const renderRow = (item: SubjectList) => (
-  <tr
-    key={item.id}
-    className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-  >
-    <td className="flex items-center gap-4 p-4">{item.name}</td>
-    <td className="hidden md:table-cell">{item.teachers.map(teacher=>teacher.name).join('')}</td>
-    <td>
-      <div className="flex items-center gap-2">
-      </div>
-    </td>
-  </tr>
-);
 
 const SubjectListPage = async ({
   searchParams,
 }: {
   searchParams:{[key:string]:string | undefined };
 }) => {
-
+  const authResult = await auth();
+  const role = (authResult?.sessionClaims?.metadata as { role?: string })?.role;
   const { page, ...queryParams } = searchParams
 
   const p = page ? parseInt(page) : 1;
 
   const query: Prisma.SubjectWhereInput = {};
-
+  
+  const columns = [
+    {
+      header: "Subject Name",
+      accessor: "name",
+    },
+    {
+      header: "Teachers",
+      accessor: "teachers",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Actions",
+      accessor: "action",
+    },
+  ];
+  
+  const renderRow = (item: SubjectList) => (
+    <tr
+      key={item.id}
+      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
+    >
+      <td className="flex items-center gap-4 p-4">{item.name}</td>
+      <td className="hidden md:table-cell">{item.teachers.map(teacher=>teacher.name).join('')}</td>
+      <td>
+        <div className="flex items-center gap-2">
+        {role === "admin" && (
+              <>
+                <FormModal table="subject" type="update" data={item} />
+                <FormModal table="subject" type="delete" id={item.id} />
+              </>
+            )}
+        </div>
+      </td>
+    </tr>
+  );
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
@@ -91,7 +99,7 @@ const SubjectListPage = async ({
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            
+            {role === "admin" && <FormModal table="subject" type="create" />}
           </div>
         </div>
       </div>
